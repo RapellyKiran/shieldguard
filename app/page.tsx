@@ -10,15 +10,27 @@ import { LetterScreen } from "@/components/screens/LetterScreen";
 import { DeletionScreen } from "@/components/screens/DeletionScreen";
 import { RecoveryScreen } from "@/components/screens/RecoveryScreen";
 import { ErrorBanner } from "@/components/ui";
-import { useChannel, useDemo } from "@/lib/useDemo";
+import { postMessage, useChannel, useDemo } from "@/lib/useDemo";
 
 export default function Page() {
   const { state, patch, actions } = useDemo();
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Caller lines arrive from the Scammer Console window.
+  // Caller lines arrive from the Scammer Console window. The phone is also the
+  // authority on whether a call is live, so it answers a console that opened or
+  // reloaded mid-call and missed `call_started`.
   useChannel((msg) => {
-    if (msg.kind === "caller_line") void actions.addCallerLine(msg.text);
+    if (msg.kind === "caller_line") {
+      void actions.addCallerLine(msg.text);
+    } else if (msg.kind === "state_request") {
+      postMessage({
+        kind: "call_state",
+        active: state.callActive,
+        fromIdentifier: state.event?.fromIdentifier,
+        fromDisplayName: state.event?.fromDisplayName,
+        agentLines: state.transcript.filter((t) => t.speaker === "agent").map((t) => t.text),
+      });
+    }
   });
 
   const bumpConsole = () => setRefreshKey((k) => k + 1);
@@ -37,6 +49,7 @@ export default function Page() {
               <CallScreen
                 state={state}
                 onEnd={() => void actions.endCall().then(bumpConsole)}
+                onScreenAnyway={() => void actions.screenAnyway()}
                 onDismissError={dismissError}
               />
             )}

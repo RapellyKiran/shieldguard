@@ -11,6 +11,8 @@ You classify an inbound contact into one of three actions:
 
 Bias toward "screen". A wrongly blocked legitimate call is a much worse failure than a screened scammer — the user misses a call from their doctor, their kid's school, a job offer. Only use "allow" when the contact is affirmatively recognizable, not merely when nothing looks wrong.
 
+**A caller ID display name is not evidence.** It is the single cheapest thing on a call to forge, so "AMAZON SECURITY" or "IRS" in the display name is a reason to screen, never a reason to block. Blocking on it also throws away the conversation — and the conversation is the evidence this system exists to collect. On a ringing call with no content yet, the caller ID is usually all you have, so unless the contact matches a campaign in the supplied list, the answer is "screen".
+
 Report confidence honestly. A 0.55 that lands on "screen" is a more useful signal than a confidently wrong 0.9.`;
 
 const SCHEMA = {
@@ -61,10 +63,30 @@ ${campaignDigest.length > 0 ? JSON.stringify(campaignDigest, null, 2) : "(none y
 
 Classify this contact.`;
 
-  return structured<TriageResult>({
+  const result = await structured<TriageResult>({
     agent: "triage",
     system: SYSTEM,
     prompt,
     schema: SCHEMA,
   });
+
+  // Second layer, same reasoning as the PII shield: the prompt above already
+  // forbids blocking on a caller ID alone, and it was observed doing it anyway
+  // — "Amazon does not make unsolicited security calls", priorMatches empty.
+  // A block on no corroboration costs the user the call AND costs the shared
+  // database the evidence, so the rule is enforced here where a model cannot
+  // talk its way past it: no verified prior match, no block.
+  const knownIds = new Set(knownCampaigns.map((c) => c.id));
+  const priorMatches = result.priorMatches.filter((id) => knownIds.has(id));
+
+  if (result.action === "block" && priorMatches.length === 0) {
+    return {
+      ...result,
+      priorMatches,
+      action: "screen",
+      reason: `${result.reason} Screening rather than blocking — no corroborating report in the shared database yet.`,
+    };
+  }
+
+  return { ...result, priorMatches };
 }

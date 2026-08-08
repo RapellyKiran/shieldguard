@@ -30,7 +30,22 @@ export type DemoMessage =
   | { kind: "caller_line"; text: string }
   | { kind: "agent_line"; text: string }
   | { kind: "call_started"; fromIdentifier: string; fromDisplayName?: string }
-  | { kind: "call_ended" };
+  | { kind: "call_ended" }
+  /**
+   * BroadcastChannel delivers only to windows that are already listening, and
+   * it retains nothing. A Scammer Console opened — or reloaded — after the call
+   * started would otherwise never see `call_started` and would sit disabled for
+   * the rest of the call. So it asks on mount, and the phone answers.
+   */
+  | { kind: "state_request" }
+  | {
+      kind: "call_state";
+      active: boolean;
+      fromIdentifier?: string;
+      fromDisplayName?: string;
+      /** Agent turns so far, so a late window shows the conversation in progress. */
+      agentLines: string[];
+    };
 
 export function postMessage(msg: DemoMessage) {
   if (typeof window === "undefined") return;
@@ -234,6 +249,37 @@ export function useDemo() {
     [patch, runAgentTurn],
   );
 
+  /**
+   * Override a block and screen the caller anyway.
+   *
+   * A repeat call from a known campaign is exactly the call triage wants to
+   * block — and exactly the call the enforcement side needs, because TCPA
+   * § 227(c)(5) only opens up on a second contact within twelve months.
+   * Blocking is the passive defence this product exists to replace, so the
+   * choice belongs to the user rather than to the triage agent.
+   */
+  const screenAnyway = useCallback(async () => {
+    const { event, triage } = ref.current;
+    if (!event || !triage) return;
+    try {
+      patch({
+        triage: { ...triage, action: "screen" },
+        callActive: true,
+        busy: "Agent answering…",
+        error: null,
+      });
+      postMessage({
+        kind: "call_started",
+        fromIdentifier: event.fromIdentifier,
+        fromDisplayName: event.fromDisplayName,
+      });
+      await runAgentTurn();
+      patch({ busy: null });
+    } catch (e) {
+      patch({ error: e instanceof Error ? e.message : String(e), busy: null });
+    }
+  }, [patch, runAgentTurn]);
+
   /** A caller line arrives — typed in the scammer console, or scripted. */
   const addCallerLine = useCallback(
     async (text: string) => {
@@ -332,7 +378,7 @@ export function useDemo() {
     state,
     patch,
     actions: {
-      startCall, addCallerLine, endCall, analyze,
+      startCall, screenAnyway, addCallerLine, endCall, analyze,
       draftLetter, sendLetter, reset, go,
     },
   };

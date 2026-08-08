@@ -7,10 +7,12 @@ import type { DemoState } from "@/lib/useDemo";
 export function CallScreen({
   state,
   onEnd,
+  onScreenAnyway,
   onDismissError,
 }: {
   state: DemoState;
   onEnd: () => void;
+  onScreenAnyway: () => void;
   onDismissError: () => void;
 }) {
   const { event, triage, transcript, streaming, busy, error, callActive } = state;
@@ -72,6 +74,27 @@ export function CallScreen({
           <p className="mt-1 text-xs text-rose-400/70">
             Matched a known campaign. Your phone never lit up.
           </p>
+          {/* A blocked repeat caller is the one worth answering: § 227(c)(5)
+              needs a second contact, and blocking forfeits it. The user makes
+              that trade, not the triage agent. */}
+          <p className="mt-3 text-[11px] leading-relaxed text-rose-200/60">
+            Answering costs you nothing and gets the second contact enforcement needs.
+          </p>
+          <div className="mt-2">
+            <Button variant="ghost" full onClick={onScreenAnyway} disabled={Boolean(busy)}>
+              Screen it anyway — collect the evidence
+            </Button>
+          </div>
+          {busy && (
+            <div className="mt-2">
+              <Spinner label={busy} />
+            </div>
+          )}
+          {error && (
+            <div className="mt-2 text-left">
+              <ErrorBanner message={error} onDismiss={onDismissError} />
+            </div>
+          )}
         </div>
       )}
 

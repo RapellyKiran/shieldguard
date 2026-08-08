@@ -33,8 +33,22 @@ export default function ScammerConsole() {
       setActive(false);
     } else if (msg.kind === "agent_line") {
       setLines((l) => [...l, { speaker: "agent", text: msg.text }]);
+    } else if (msg.kind === "call_state") {
+      // The phone's answer to our mount-time question. Adopt it wholesale:
+      // this window may have opened late, and the phone is the authority.
+      setActive(msg.active);
+      setLines(msg.agentLines.map((text) => ({ speaker: "agent" as const, text })));
+      setCaller(
+        msg.fromIdentifier ? `${msg.fromDisplayName ?? "Unknown"} · ${msg.fromIdentifier}` : "",
+      );
     }
   });
+
+  // Ask the phone whether a call is already in progress. Opening this window
+  // after the call started is the normal case on stage, not an edge case.
+  useEffect(() => {
+    postMessage({ kind: "state_request" });
+  }, []);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });

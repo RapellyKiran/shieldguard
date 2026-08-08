@@ -176,6 +176,31 @@ export function VerdictScreen({
               </Button>
             </div>
           )}
+
+          {/*
+            A single call from a live human carries no private right of action:
+            § 227(b) needs an autodialer or a prerecorded voice, and § 227(c)(5)
+            needs a second call within twelve months. So the honest outcome of a
+            first contact is a regulator referral and nothing to demand — but
+            with no button and no explanation that reads on stage as a dead
+            button, which is how this was first found. Say why instead.
+          */}
+          {!busy && damages && damages.high === 0 && (
+            <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+              <p className="text-[10px] uppercase tracking-wide text-amber-400/80">
+                No demand letter from this contact
+              </p>
+              <p className="mt-1 text-[11px] leading-relaxed text-amber-100/80">
+                Nothing here is privately actionable yet. TCPA § 227(b) requires an autodialer or a
+                prerecorded voice; § 227(c)(5) requires a second call from this number within twelve
+                months. Everything found so far is regulator-only, so it goes to the FTC and the
+                state Attorney General — you have no standing to demand money for it.
+              </p>
+              <p className="mt-2 text-[11px] leading-relaxed text-amber-100/60">
+                Screen this caller once more to establish the pattern, and the demand letter opens up.
+              </p>
+            </div>
+          )}
         </Card>
       )}
     </div>

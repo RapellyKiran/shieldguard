@@ -64,9 +64,15 @@ function load(): Store {
   if (global.__shieldguardStore) return global.__shieldguardStore;
 
   let store = emptyStore();
-  if (existsSync(DB_PATH)) {
+  // DB_PATH is runtime-configurable via SHIELDGUARD_DB, so Turbopack cannot
+  // statically scope it and would otherwise trace the entire project — public
+  // folder and all — into the server bundle. The path is ours, not user input.
+  if (existsSync(/* turbopackIgnore: true */ DB_PATH)) {
     try {
-      store = { ...emptyStore(), ...JSON.parse(readFileSync(DB_PATH, "utf8")) };
+      store = {
+        ...emptyStore(),
+        ...JSON.parse(readFileSync(/* turbopackIgnore: true */ DB_PATH, "utf8")),
+      };
     } catch {
       // A corrupt file must not take the demo down. Start clean.
       store = emptyStore();
@@ -81,10 +87,10 @@ function load(): Store {
 function save(): void {
   const store = load();
   const dir = dirname(DB_PATH);
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  if (!existsSync(/* turbopackIgnore: true */ dir)) mkdirSync(dir, { recursive: true });
 
   const tmp = `${DB_PATH}.tmp`;
-  writeFileSync(tmp, JSON.stringify(store, null, 2), "utf8");
+  writeFileSync(/* turbopackIgnore: true */ tmp, JSON.stringify(store, null, 2), "utf8");
   renameSync(tmp, DB_PATH);
 }
 

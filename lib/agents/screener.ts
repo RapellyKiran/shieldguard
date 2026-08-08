@@ -161,10 +161,35 @@ ${rendered}
 
 Produce the verdict.`;
 
-  return structured<Verdict>({
+  const verdict = await structured<Verdict>({
     agent: "screener",
     system: VERDICT_SYSTEM,
     prompt,
     schema: VERDICT_SCHEMA,
   });
+
+  // Second layer, same reasoning as the PII shield: the prompt above demands
+  // verbatim quotes and was observed paraphrasing one anyway. These quotes are
+  // hashed into the evidence record and end up in a demand letter, so a quote
+  // that is not actually in the transcript is a misquote in a legal document.
+  // Drop it rather than trust it.
+  // Per turn, not against the joined transcript: a "quote" stitched together
+  // from two speakers is something nobody said.
+  const turns = transcript.map((t) => normalizeQuote(t.text));
+  const redFlags = verdict.redFlags.filter((f) => {
+    const quote = normalizeQuote(f.quote);
+    return quote.length > 0 && turns.some((t) => t.includes(quote));
+  });
+
+  return { ...verdict, redFlags };
+}
+
+/** Curly quotes, non-breaking spaces and stray whitespace are not paraphrase. */
+function normalizeQuote(text: string): string {
+  return text
+    .replace(/[‘’‛]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/[–—]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
 }
