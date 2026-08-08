@@ -73,6 +73,16 @@ ${event.body ? `Opening content: "${event.body}"` : ""}`;
     messages.unshift({ role: "user", content: "(The caller has connected but has not spoken yet.)" });
   }
 
+  // It also requires the conversation to END with a user turn — this model
+  // rejects assistant prefill outright ("This model does not support assistant
+  // message prefill"), a 400 mid-call. That happens whenever a turn is
+  // requested while the last thing said was ours: a duplicate caller line, a
+  // second phone window, a retry after a dropped stream. On a real call the
+  // equivalent is silence, so say so and let the agent prompt them.
+  if (messages[messages.length - 1].role !== "user") {
+    messages.push({ role: "user", content: "(The caller has not said anything further.)" });
+  }
+
   return getClient().messages.stream({
     model: MODEL,
     max_tokens: cfg.maxTokens,
