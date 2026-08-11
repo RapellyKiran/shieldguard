@@ -8,8 +8,9 @@ export function getClient(): Anthropic {
   if (!client) {
     if (!process.env.ANTHROPIC_API_KEY) {
       throw new Error(
-        "ANTHROPIC_API_KEY is not set. Export it before starting the app:\n" +
-          "  export ANTHROPIC_API_KEY=sk-ant-...",
+        "ANTHROPIC_API_KEY is not set. Put your own key in .env.local before\n" +
+          "starting the app (it is gitignored — do not commit it):\n" +
+          "  cp .env.example .env.local",
       );
     }
     client = new Anthropic();

@@ -367,7 +367,8 @@ check("contact count tracks repeat contacts for damages", countContacts(DEMO_USE
 if (!process.env.ANTHROPIC_API_KEY) {
   console.log("\n\x1b[33m⚠ PHASE B skipped — ANTHROPIC_API_KEY is not set.\x1b[0m");
   console.log("  Offline invariants above still gate the build. To run the full");
-  console.log("  spine:  export ANTHROPIC_API_KEY=sk-ant-...  && npm run demo:check\n");
+  console.log("  spine:  put your own key in .env.local (gitignored), then");
+  console.log("          npm run demo:check\n");
 } else {
   console.log("\n\x1b[1m\x1b[36mPHASE B — live spine (real model calls)\x1b[0m");
 

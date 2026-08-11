@@ -13,8 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ShieldGuard",
-  description: "AI call screening, evidence capture, and consumer enforcement.",
+  title: "ShieldGuard (demo)",
+  description:
+    "Hackathon demo: AI call screening, evidence capture, and consumer enforcement. " +
+    "Fictional data only — not for real calls, real personal data, or legal use.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

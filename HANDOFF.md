@@ -1,8 +1,14 @@
 # ShieldGuard — Session Handoff
 
-**Project:** Claude Community Impact Lab, Los Angeles — 4-person team.
-**Location:** `/Users/krapelly/Kiran/Claude/ImpactLab_08082026/shieldguard`
-**Approved plan:** `~/.claude/plans/i-am-at-claude-twinkly-kitten.md` (read this first — it has the full rationale, demo choreography, and work split).
+> **⚠️ Historical document. ShieldGuard is a hackathon demo, published for code
+> reading only — see the warning at the top of [README.md](README.md) before
+> going further.** This file is the working handoff written mid-build; the "next
+> steps" below describe what the team planned during the event, not work that
+> should now be carried out toward real-world use. Do not use this software to
+> screen real calls, produce legal documents, or handle any real person's data.
+
+**Project:** Claude Community Impact Lab, Los Angeles — 4-person team. Won 1st prize.
+**Location:** repository root (this directory).
 
 ---
 
@@ -93,9 +99,10 @@ The exported interface is unchanged, so restoring SQLite later touches `lib/db.t
 
 ## Next steps, in order
 
-1. **Set the key and run the live spine.**
+1. **Set the key and run the live spine.** Put your own key in `.env.local`
+   (gitignored — never commit it, never paste it into this file or the README):
    ```bash
-   export ANTHROPIC_API_KEY=sk-ant-...
+   cp .env.example .env.local   # paste the key into .env.local, then:
    npm run demo:check
    ```
    Phase B exercises triage → verdict → ingest → violations → letter → leak scan, and asserts the pharmacy scenario is *not* classified as a scam. Expect prompt tuning on the first run.
@@ -123,11 +130,12 @@ The exported interface is unchanged, so restoring SQLite later touches `lib/db.t
 - Turbopack warns about dynamic `fs` calls in `lib/db.ts`. Cosmetic; runtime is verified working.
 - No linter is configured, so unused imports and dead exports don't error.
 
-### Before this touches a real user
+### Why this must not touch a real user
 
-- `data/brokers.ts` is **entirely fictional** by design. Naming a real company as a holder of someone's data is a factual claim we haven't verified. Swap in the real registry from `https://cppa.ca.gov/data_broker_registry/` — the `DataBroker` type already matches its published fields.
-- Letter delivery targets an in-app mock inbox. Wiring a real mail transport is a deliberate, separate decision.
-- The DROP flow deliberately *prepares* a submission rather than auto-submitting: the CPPA platform verifies the consumer's own identity, and we should not hold those credentials.
+- `data/brokers.ts` is **entirely fictional** by design. Naming a real company as a holder of someone's data is a factual claim we haven't verified. A real system would use the registry at `https://cppa.ca.gov/data_broker_registry/` — the `DataBroker` type already matches its published fields.
+- Letter delivery targets an in-app mock inbox. Nothing is sent to anyone, and the drafts are unreviewed model output about statutes — not legal advice, and not safe to send to a real recipient.
+- The DROP flow deliberately *prepares* a submission rather than auto-submitting: the CPPA platform verifies the consumer's own identity, and this application should never hold those credentials.
+- No auth, no encryption at rest, no retention policy, no security review, no adversarial testing of the agent prompts. All demo identities are fictional and must stay that way.
 
 ---
 

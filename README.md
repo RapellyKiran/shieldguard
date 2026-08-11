@@ -1,6 +1,31 @@
 # ShieldGuard
 
-A carrier- and OS-independent anti-scam layer tied to a person's digital ID (name, email, phone). Built for the Claude Community Impact Lab, Los Angeles.
+> ## ⚠️ Demo software — read this before anything else
+>
+> **ShieldGuard is a hackathon prototype, published for code reading only.**
+> It won 1st prize at the Claude Community Impact Lab, Los Angeles — which is a
+> statement about a 2-day build, not about production readiness.
+>
+> **Do not use this software for any purpose other than reading the source.** In
+> particular, do not use it to:
+>
+> - screen real phone calls, or handle any real caller's speech or data;
+> - generate, send, or rely on any legal document — the demand letters it drafts
+>   are **not legal advice**, have not been reviewed by counsel, and cite statutes
+>   an LLM selected;
+> - file, submit, or prepare a real CCPA/DELETE Act deletion request;
+> - store or process any real person's name, email, phone, or address.
+>
+> All identities, calls, scam scenarios, and data brokers in this repository are
+> **fictional**. There is no authentication, no authorization, no rate limiting,
+> no input validation hardening, no audit trail suitable for evidentiary use, and
+> no security review. Storage is an unencrypted JSON file on disk. The agent
+> prompts are unvalidated against adversarial input.
+>
+> Provided as-is, with no warranty and no support. Anything you do with it is
+> your own responsibility.
+
+A carrier- and OS-independent anti-scam layer tied to a person's digital ID (name, email, phone). Built as a demo for the Claude Community Impact Lab, Los Angeles.
 
 Four capabilities on one spine:
 
@@ -9,13 +34,18 @@ Four capabilities on one spine:
 3. **Enforce** — evidence is matched against FTC/TCPA rules, producing a demand letter the consumer sends *without disclosing any personal information*.
 4. **Prevent** — California DELETE Act deletion requests shrink the attack surface. The DROP broker-compliance deadline was August 1, 2026.
 
-## Quick start
+## Running it locally (optional — reading the code is the point)
 
 ```bash
 npm install
-export ANTHROPIC_API_KEY=sk-ant-...
+cp .env.example .env.local   # then paste your own key into .env.local
 npm run dev
 ```
+
+`.env.local` is gitignored and must stay that way; it is the only place a key
+belongs. Use a personal key you are willing to rotate, and revoke it when you are
+done — this repository ships no key of its own and never should. Run it on
+localhost only; it is not built to be exposed to a network.
 
 Open <http://localhost:3000> for the phone frame plus operations console, and
 <http://localhost:3000/scammer> in a second window — a teammate types there as the
@@ -118,14 +148,27 @@ by default, so `max_tokens` must cover thinking *plus* output; and assistant
 prefill returns a 400, so response shape is constrained with structured outputs
 instead.
 
-## Before this touches a real user
+## Why this is nowhere near a real user
+
+This section was written as a to-do list during the hackathon. It is kept here as
+a record of what a real product would have to answer — not as an invitation to
+finish it and ship it. The gaps below are the visible ones; a demo built in two
+days has others nobody has looked for yet.
 
 - `data/brokers.ts` is **entirely fictional** by design. Naming a real company as a
-  holder of someone's data is a factual claim we have not verified. Swap in the
-  real registry from <https://cppa.ca.gov/data_broker_registry/> — the `DataBroker`
-  type already matches its published fields.
-- Letter delivery targets an in-app mock inbox. Wiring a real mail transport is a
-  separate, deliberate decision.
+  holder of someone's data is a factual claim we have not verified. A real system
+  would use the registry at <https://cppa.ca.gov/data_broker_registry/> — the
+  `DataBroker` type already matches its published fields.
+- Letter delivery targets an in-app mock inbox. Nothing is sent to anyone. The
+  drafts are model output about statutes, unreviewed by a lawyer, and must not be
+  sent to a real recipient.
 - The DROP flow deliberately *prepares* a submission rather than auto-submitting:
-  the CPPA platform verifies the consumer's own identity, and we should not hold
-  those credentials.
+  the CPPA platform verifies the consumer's own identity, and this application
+  should never hold those credentials.
+- No auth, no tenancy isolation, no encryption at rest, no retention policy, no
+  logging suitable for evidence, no adversarial testing of the agent prompts.
+
+## Status and license
+
+Archived hackathon demo. Not maintained, not accepting production use, no
+warranty of any kind. Read the code; do not deploy it.
