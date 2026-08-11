@@ -4,7 +4,7 @@
 >
 > **ShieldGuard is a hackathon prototype, published for code reading only.**
 > It won 1st prize at the Claude Community Impact Lab, Los Angeles — which is a
-> statement about a 2-day build, not about production readiness.
+> statement about a 4-hour build, not about production readiness.
 >
 > **Do not use this software for any purpose other than reading the source.** In
 > particular, do not use it to:
@@ -152,8 +152,8 @@ instead.
 
 This section was written as a to-do list during the hackathon. It is kept here as
 a record of what a real product would have to answer — not as an invitation to
-finish it and ship it. The gaps below are the visible ones; a demo built in two
-days has others nobody has looked for yet.
+finish it and ship it. The gaps below are the visible ones; a demo built in four
+hours has others nobody has looked for yet.
 
 - `data/brokers.ts` is **entirely fictional** by design. Naming a real company as a
   holder of someone's data is a factual claim we have not verified. A real system
